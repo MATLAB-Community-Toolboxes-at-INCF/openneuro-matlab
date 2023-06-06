@@ -1,8 +1,26 @@
 classdef BIDS
     %BIDS implements the skeleton for the interface between a file folder
-    %validly organized to the BIDS data organization standard. Utilizes
-    %MATLAB table and datastore types to load/show data within theg given
-    %AWS S3 bucket and folder.
+    % validly organized to the BIDS data organization standard and the
+    % representation of its information in structures and tables. Moreover,
+    % it utilizes MATLAB table and datastore types to load/show data within 
+    % the given AWS S3 bucket and folder.
+    %
+    % USAGE EXAMPLE:
+    %       
+    %               dataset = BIDS(bucket, ID, modality)
+    %
+    % :param bucket: base AWS S3 path
+    % :type bucket: string
+    %
+    % :param ID: folder within AWS S3 bucket
+    % :type ID: string
+    %
+    % :param modality: (optional) dataset type
+    % :type modality: string
+    %
+    % :returns: - :BIDS Class Object: dataset properties and information
+    % within specified S3 bucket and folder location
+    %
     %
     % Alex Estrada 4.2023
 
@@ -11,14 +29,19 @@ classdef BIDS
                                             % .bucket 
                                             % .ID
                                             % .dir
+                                            % .modality
+                                            % .modality_properties
         about_dataset   struct  = struct    % dataset_description.json
         participants    table   = table     % data table
         BIDSDatastore   cell    = {}        % cell for BIDSDataStore
         info            struct  = struct    % participants.json
+        folder_files    struct  = struct    % complete folder structure
     end
     
     properties (Access = private)
-        modalities      cell    = {'egg'}   % compatabilities
+        modality        struct = struct('compatible', ['egg', 'mri'], ... % compatabilities
+                                        'depth_initiation', 2, ... % folder depth
+                                        'focus_files', false)      % true if found     
     end
 
     methods
@@ -56,38 +79,28 @@ classdef BIDS
             b.encoding.dir = dir_base;
             
             % create repository structure
-            dir_tree = generateFolderStructure(dir_base);
+            [dir_tree, b.encoding, b.modality] = generateFolderStructure(dir_base, b.modality, b.encoding);
+            b.folder_files = dir_tree;
 
-            % about dataset
-            try
-                dir_about = dir_base + "dataset_description.json";
-                b.about_dataset = jsondecode(fileread(dir_about));
-            catch
-                warning('dataset_description.json not found.')
+            % look for wanted files
+            for i = 1:numel(dir_tree.files)
+                file_name = string(dir_tree.files(i).name);
+                parent_folder = string(dir_tree.files(i).folder);
+                dir = parent_folder + "/" + file_name;
+                
+                switch file_name
+                    case "participants.tsv"
+                        temp = readtable(dir, 'FileType', 'delimitedtext');
+                        % set up table using participants.tsv data
+                        if ~isempty(temp)
+                            b.participants = temp;
+                        end
+                    case "dataset_description.json"
+                        b.about_dataset = jsondecode(fileread(dir));
+                    case "participants.json"
+                        b.about_dataset = jsoncode(fileread(dir));
+                end 
             end
-
-            % participants.tsv
-            try
-                dir_participants = dir_base + "participants.tsv";
-                temp = tsvread(dir_participants);
-                % set up table using participants.tsv data
-                if ~isempty(temp)
-                    b.participants = struct2table(temp);
-                end
-            catch
-                warning('participant.tsv not found')
-            end
-
-            % participants.json
-            try 
-                dir_participants_json = dir_base + "participants.json";
-                b.info = jsondecode(fileread(dir_participants_json));
-            catch
-                warning('participants.json not found.')
-            end
-
-            
-
         end
         
         function b = loadParticipants(b)
@@ -108,13 +121,18 @@ classdef BIDS
         function b = checkInput(b, bucket, ID, modality)
             % Check arguments into the constructor
             % Default values:
-            %       bucket = "openneuro.org"
-            %           ID = ""
-            %     modality = ""
+            %                bucket = "openneuro.org"
+            %                    ID = ""
+            %              modality = ""
+            %   modality_properties = dictionary()
             %
-            % Note: modality currently only supports "EEG"
+            % Note: modality currently only supports "EEG" and "MRI"
             
+            % fix case
             input = lower([bucket, ID, modality]);
+
+            % initialize modality properties
+            b.encoding.modality_properties = create_moprop();
 
             % bucket
             if input(1).endsWith("/")
@@ -132,15 +150,16 @@ classdef BIDS
             end
             
             % modality
-            if isempty(input(3)) || any(strcmp(input(3), b.modalities))
+            modal_comp = string(vertcat(b.modality.compatible));
+            if isempty(input(3)) || any(strcmp(input(3), modal_comp))
                 warning("Modality " + input(3) + "not recognized or not yet supported.")
             else
                 b.encoding.modality = "";
             end
-
-            % set the bucket and folder properties
-            b.encoding.bucket = input(1) + "/";
-            b.encoding.ID = input(2);
+                
+            % set the modality, bucket and folder properties
+            b.encoding.bucket   = input(1) + "/";
+            b.encoding.ID       = input(2);
             b.encoding.modality = input(3);
         end
     
