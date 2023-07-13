@@ -1,41 +1,41 @@
 classdef BIDS
-    %BIDS implements the skeleton for the interface between a file folder
-    % validly organized to the BIDS data organization standard and the
-    % representation of its information in structures and tables. Moreover,
-    % it utilizes MATLAB table and datastore types to load/show data within 
-    % the given AWS S3 bucket and folder.
-    %
-    % USAGE EXAMPLE:
-    %       
-    %               dataset = BIDS(bucket, ID, modality)
-    %
-    % :param bucket: base AWS S3 path
-    % :type bucket: string
-    %
-    % :param ID: folder within AWS S3 bucket
-    % :type ID: string
-    %
-    % :param modality: (optional) dataset type
-    % :type modality: string
-    %
-    % :returns: - :BIDS Class Object: dataset properties and information
-    % within specified S3 bucket and folder location
-    %
-    %
-    % Alex Estrada 4.2023
+%BIDS implements the skeleton for the interface between a file folder
+% validly organized to the BIDS data organization standard and the
+% representation of its information in structures and tables. Moreover,
+% it utilizes MATLAB table and datastore types to load/show data within 
+% the given AWS S3 bucket and folder.
+%
+% USAGE EXAMPLE:
+%       
+%               dataset = BIDS(bucket, ID, modality)
+%
+% :param bucket: base AWS S3 path
+% :type bucket: string
+%
+% :param ID: folder within AWS S3 bucket
+% :type ID: string
+%
+% :param modality: (optional) dataset type
+% :type modality: string
+%
+% :returns: - :BIDS Class Object: dataset properties and information 
+%              within specified S3 bucket and folder location
+%
+%
+% 4.25.2023 - Alex Estrada - %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     properties
+        participants    table   = table     % data table
+        BIDSData        cell    = {}        % cell for BIDSDataStore objs
+        about_dataset   struct  = struct    % dataset_description.json
+        info            struct  = struct    % participants.json
+        folder_files    struct  = struct    % complete folder structure
         encoding        struct  = struct    % data encoding information
                                             % .bucket 
                                             % .ID
                                             % .dir
                                             % .modality
                                             % .modality_properties
-        about_dataset   struct  = struct    % dataset_description.json
-        participants    table   = table     % data table
-        BIDSDatastore   cell    = {}        % cell for BIDSDataStore
-        info            struct  = struct    % participants.json
-        folder_files    struct  = struct    % complete folder structure
     end
     
     properties (Access = private)
@@ -66,55 +66,95 @@ classdef BIDS
         end
         
         function b = loadData(b)
-            % Load and organize data from the bucket/folder. Particularly,
+            % Internal Function run at initiation.
+            %
+            % Loads and organizes data from bucket/folder. Particularly,
             % this attemps to find and load following files into the BIDS
             % class object: 
+            %
             %       - dataset_description.json -> structure
             %       - participants.tsv         -> table
             %       - participants.json        -> structure
-            % Also attempts to find ./derivative folders and its contents. 
+            %
+            % Importantly, loadData also generates folder structure within 
+            % the specified bucket/folder, and attempts to find all other
+            % file contents. 
 
             % base directory
             dir_base = "s3://" + b.encoding.bucket + b.encoding.ID;
             b.encoding.dir = dir_base;
             
             % create repository structure
-            [dir_tree, b.encoding, b.modality] = generateFolderStructure(dir_base, b.modality, b.encoding);
-            b.folder_files = dir_tree;
+            try
+                [dir_tree, b.encoding, b.modality] = generateFolderStructure(dir_base, b.modality, b.encoding);
+                b.folder_files = dir_tree;
+            catch
+                error(['Unable to access or find given bucket/ID. Check for ' ...
+                       'typos or permissions and try again.'])
+            end
 
-            % look for wanted files
-            for i = 1:numel(dir_tree.files)
-                file_name = string(dir_tree.files(i).name);
-                parent_folder = string(dir_tree.files(i).folder);
+            % search important files in root directory
+            focus_files = [1, 1, 1];
+            for i = 1:height(dir_tree.files)
+                file_name = string(dir_tree.files.name{i});
+                parent_folder = string(dir_tree.files.folder{i});
                 dir = parent_folder + "/" + file_name;
-                
                 switch file_name
                     case "participants.tsv"
                         temp = readtable(dir, 'FileType', 'delimitedtext');
-                        % set up table using participants.tsv data
-                        if ~isempty(temp)
-                            b.participants = temp;
-                        end
+                        if ~isempty(temp); b.participants = temp;end
+                        % update focus files
+                        focus_files(1) = 0;
                     case "dataset_description.json"
                         b.about_dataset = jsondecode(fileread(dir));
+                        % update
+                        focus_files(2) = 0;
                     case "participants.json"
-                        b.about_dataset = jsoncode(fileread(dir));
+                        b.info = jsoncode(fileread(dir));
+                        % update
+                        focus_files(3) = 0;
                 end 
             end
+            
+            % check for specific files
+            idx = find(focus_files);
+            for j = idx
+                switch j
+                    case 1
+                        warning("participants.tsv not found. Continuing...")
+                    case 2
+                        warning("dataset_description.json not found. Continuing...")
+                    case 3
+                        warning("participants.json not found. Continuing...")
+                end
+            end
+
         end
         
         function b = loadParticipants(b)
-            % Initializes datastore object within folder for each subject
-            
-            num = height(b.participants);
-            out = cell(num, 1);
-            for i = 1:num
-                id = b.participants.participant_id(i);  % ID
-                dir = b.encoding.dir;                   % base dir
-                bids_obj = BIDSDataStore(id, dir);
-                out{i} = bids_obj;
+            % Creates and initializes BIDSDatastore objects based on
+            % typical folder convention of given modality
+
+            % modality extensions
+            extensions = b.encoding.modality_properties("extensions");
+
+            % initialize BIDSDatastore
+            data = cell(length(extensions{:}),1);
+            index = 1;  % index for resizing
+            for i = 1:length(extensions{:})
+                extension = extensions{1}{i};
+                temp = BIDSDataStore(extension, ...
+                                     b.encoding.modality, ...
+                                     b.encoding.dir);
+                % determine if successful load
+                if temp.hasdata
+                    data{index} = temp;
+                    index = index + 1;      % update index
+                end
             end
-            b.BIDSDatastore = out;
+            
+            % set BIDSData
+            b.BIDSData = data(1:index-1);
 
         end
 
@@ -132,7 +172,7 @@ classdef BIDS
             input = lower([bucket, ID, modality]);
 
             % initialize modality properties
-            b.encoding.modality_properties = create_moprop();
+            b.encoding.modality_properties = create_moprop(input(3));
 
             % bucket
             if input(1).endsWith("/")
@@ -147,6 +187,14 @@ classdef BIDS
             % ID
             if ~input(2).endsWith("/")
                 input(2) = input(2) + "/";
+            end
+
+            if ~startsWith(input(2), "ds")
+                if length(input{2}) == 7
+                    input(2) = "ds" + input(2);
+                else
+                    warning("Unusual ID for 'openneuro.org' bucket. Continuing.")
+                end
             end
             
             % modality
