@@ -1,4 +1,4 @@
-# BIDS Toolbox#
+# BIDS Toolbox #
 A Matlab Toolbox for Brain Imaging Data Structure (BIDS) Standard
 
 ## Description ##
