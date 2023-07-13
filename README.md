@@ -35,7 +35,7 @@ Output:
 * `hasdata` Determine if data is available to read
 
 ## Example ##
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=stradaa/bids-toolbox-Alex_dev&file=https://github.com/stradaa/bids-toolbox-Alex_dev/blob/main/BIDS_Usage_Example.mlx) Open in MATLAB Online to run Live Script of BIDS Usage Example
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=stradaa/bids-toolbox-Alex_dev&file=BIDS_Usage_Example.mlx) Open in MATLAB Online to run Live Script of BIDS Usage Example
 
 ### Requirements ###
 Compatible with R2023a  
