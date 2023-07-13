@@ -36,6 +36,7 @@ Output:
 
 ## Example ##
 Run MATLAB Online to run Live Script of BIDS Usage Example
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=stradaa/bids-toolbox-Alex_dev)
 
 ### Requirements ###
 Compatible with R2023a  
