@@ -4,7 +4,7 @@ A Matlab Toolbox for Brain Imaging Data Structure (BIDS) Standard
 ## Description ##
 BIDS Class object implements the skeleton for the interface between a file folder validly organized to the BIDS data organization standard and the representation of its information in structures and tables. Moreover, it utilizes MATLAB table and datastore types to load/show data within a given Amazon S3 bucket and folder.
 
-## USAGE ##
+## Usage ##
 > `>> dataset = BIDS(bucket, ID,modality)`
 
 Input Arguments: 
