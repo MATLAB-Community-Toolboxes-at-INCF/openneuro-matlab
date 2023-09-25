@@ -83,34 +83,27 @@ classdef BIDS
             % base directory
             dir_base = "s3://" + b.encoding.bucket + b.encoding.ID;
             b.encoding.dir = dir_base;
-            
-            % create repository structure
-            try
-                [dir_tree, b.encoding, b.modality] = generateFolderStructure(dir_base, b.modality, b.encoding);
-                b.folder_files = dir_tree;
-            catch
-                error(['Unable to access or find given bucket/ID. Check for ' ...
-                       'typos or permissions and try again.'])
-            end
 
             % search important files in root directory
+            root_dir = dir(dir_base);
+
             focus_files = [1, 1, 1];
-            for i = 1:height(dir_tree.files)
-                file_name = string(dir_tree.files.name{i});
-                parent_folder = string(dir_tree.files.folder{i});
-                dir = parent_folder + "/" + file_name;
+            for i = 1:height(root_dir)
+                file_name = string(root_dir(i).name);
+                parent_folder = string(root_dir(i).folder);
+                dir_file = parent_folder + "/" + file_name;
                 switch file_name
                     case "participants.tsv"
-                        temp = readtable(dir, 'FileType', 'delimitedtext');
+                        temp = readtable(dir_file, 'FileType', 'delimitedtext');
                         if ~isempty(temp); b.participants = temp;end
                         % update focus files
                         focus_files(1) = 0;
                     case "dataset_description.json"
-                        b.about_dataset = jsondecode(fileread(dir));
+                        b.about_dataset = jsondecode(fileread(dir_file));
                         % update
                         focus_files(2) = 0;
                     case "participants.json"
-                        b.info = jsoncode(fileread(dir));
+                        b.info = jsoncode(fileread(dir_file));
                         % update
                         focus_files(3) = 0;
                 end 
