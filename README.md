@@ -1,2 +1,2 @@
-# BIDS Toolbox
-A MATLAB® toolbox for accessing and using datasets following the BIDS specification
+# OpenNEURO with MATLAB
+A MATLAB® toolbox for accessing remote datasets stored on [OpenNEURO](https://openneuro.org/search).
