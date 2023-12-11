@@ -35,8 +35,8 @@ classdef OpenNeuroDataSet
          % base directory
             dir_base = "s3://" + b.encoding.bucket +"/" + b.encoding.ID;
             b.encoding.dir = dir_base;
-           
 
+          
          % search for participants.tsv
          try
             b.participants = readtable(fullfile(dir_base + "/participants.tsv"), 'FileType', 'delimitedtext');
