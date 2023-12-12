@@ -8,6 +8,7 @@ function datastore = addParticipantwiseDataStore(obj, sub_ID)
         sub_ID  string              = string
       end
 
+ % initialize data store
         datastore.filepaths = [];
         datastore.loaded_data = [];
         datastore.ds_ID = obj.encoding.ID;
@@ -51,6 +52,7 @@ function datastore = addParticipantwiseDataStore(obj, sub_ID)
                 end
             end
 
+    % add loaded data to data store
     datastore.loaded_data =loaded_data;
 
 end
