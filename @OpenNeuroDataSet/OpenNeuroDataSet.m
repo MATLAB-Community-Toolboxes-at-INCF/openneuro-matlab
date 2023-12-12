@@ -1,5 +1,6 @@
 classdef OpenNeuroDataSet
 % Creates data set summary
+% (C) Johanna Bayer 01.12.2023
 
     properties
         participants    table   = table     % data table: participants.tsv

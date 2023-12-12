@@ -1,5 +1,6 @@
 function datastore = addParticipantwiseDataStore(obj, sub_ID)
 % input sub_ID from participant.tsv, if available
+% (C) Johanna Bayer 07.12.2023
 
 % path table
      arguments 
@@ -8,7 +9,7 @@ function datastore = addParticipantwiseDataStore(obj, sub_ID)
       end
 
         datastore.filepaths = [];
-        datastore.files = [];
+        datastore.loaded_data = [];
         datastore.ds_ID = obj.encoding.ID;
         datastore.participants = obj.participants;
         datastore.sub_ID = sub_ID;
@@ -17,7 +18,7 @@ function datastore = addParticipantwiseDataStore(obj, sub_ID)
     % modality extensions
             extensions = obj.encoding.modality_properties("extensions");
     
-    % initialize BIDSDatastore
+    % initialize OpenNeuroDataStore
             data = cell(length(extensions{:}),1);
             index = 1;  % index for resizing
             for i = 1:length(extensions{:})
@@ -33,10 +34,23 @@ function datastore = addParticipantwiseDataStore(obj, sub_ID)
                 end
             end
 
+    % add to data store
     datastore.filepaths = data;
 
-    %jsondecode(fileread(tbl2load.FileName(i)))
-    jsonencode("s3://openneuro.org/ds004866/sub-sid001401/ses-a005515/anat/sub-sid001401_ses-a005515_acq-mprage_T1w.json");
+    % read files for subject
+            loaded_data = cell(length(extensions{:}),1);
+            index = 1;  % index for resizing
+            for i = 1:length(extensions{:})
+                if ~isempty(datastore.filepaths{i})
+                    temp = read(datastore.filepaths{i});
+                end
+                % determine if successful load
+                if ~isempty(datastore.filepaths{i})
+                    loaded_data{index} = temp;
+                    index = index + 1;      % update index
+                end
+            end
 
+    datastore.loaded_data =loaded_data;
 
 end
