@@ -23,15 +23,15 @@ Output:
 ## Methods
 - `addParticipantwiseDataStore(OpenNeuroDataSet, sub-ID)` loads all available files (.json, .tsv) for a selected subject 'sub-ID'.
 
-## OpenNeuroDataStore Syntax
+### OpenNeuroDataStore Syntax
 
 `XDatastore = addParticipantwiseDataStore(OpenNeuroDataSet, sub-ID)`
 
-### Input:
+##### Input:
 - `OpenNeuroDataSet` Class Object
 - `sub-ID` Subject ID of one of the participants in the data set as displayed in `Participants`
 
-### Output:
+##### Output:
 
 - `Xdatastore` Structure containing files 
   
