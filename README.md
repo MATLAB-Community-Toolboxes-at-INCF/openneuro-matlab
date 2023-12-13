@@ -2,4 +2,9 @@
 
 OpenNEURO Matlab Interface
 
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=likeajumprope/OpenNEURO-toolbox&file=OpenNeuroDemo.mlx)
+ # Example
+
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=likeajumprope/OpenNEURO-toolbox&file=OpenNeuroDemo.mlx) Open in MATLAB online livescript usage example.
+
+# Requirements
+Compatible with R2023a
