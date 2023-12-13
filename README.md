@@ -25,7 +25,8 @@ Output:
 
 ### OpenNeuroDataStore Syntax
 
-`XDatastore = addParticipantwiseDataStore(OpenNeuroDataSet, sub-ID)`
+`>> XDatastore = addParticipantwiseDataStore(OpenNeuroDataSet, sub-ID='X')`
+`>> mydataset = XDatastore.loaded_data{num}`
 
 ##### Input:
 - `OpenNeuroDataSet` Class Object
@@ -34,6 +35,7 @@ Output:
 ##### Output:
 
 - `Xdatastore` Structure containing files of participant 'sub-ID
+
   
  ## Example
 
