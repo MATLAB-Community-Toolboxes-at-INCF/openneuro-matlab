@@ -33,7 +33,7 @@ Output:
 
 ##### Output:
 
-- `Xdatastore` Structure containing files of `sub-ID`
+- `Xdatastore` Structure containing files of participant 'sub-ID
   
  ## Example
 
