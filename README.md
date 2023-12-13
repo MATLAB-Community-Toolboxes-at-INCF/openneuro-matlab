@@ -6,8 +6,19 @@ OpenNeuro Matlab Interface.
 
 `>> OpenNeuroDataSet = OpenNeuroDataSet(ID, modality)`
 
+Input Arguments:
+
 - `ID` OpenNeuro data set ID, of format 'dsXXXXX'
 - `modality` (optional) data set type
+
+Output:
+- `dataset` a OpenNeuroDataSet Class Object
+
+## Properties
+- `Participants` Data table created from 'participants.tsv' file
+- `About_Dataset` Data taken from the 'dataset_description.json; file
+- `Info` Data taken from the 'participant.jsoon' file
+
 
 ## Methods
 - `addParticipantwiseDataStore(OpenNeuroDataSet, sub-ID)` loads all available files (.json, .tsv) for a selected subject 'sub-ID'.
