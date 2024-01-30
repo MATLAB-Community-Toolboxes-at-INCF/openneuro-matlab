@@ -22,11 +22,13 @@ switch modality
     case "mri"
         folders = {"anat";
                    "func";
-                   "fmap"};
+                   "fmap";
+                    "dwi"};
         extension_list = {".json";
-                          ".gz";
-                          ".nii";
+                          %".gz";
+                          %".nii";
                           ".tsv"};
+    
     case ""
         warning("Modality not specified.")
         folders = {"eeg";
@@ -37,6 +39,7 @@ switch modality
         modality_properties = dictionary("folders", {folders});
         return
 end
+
 
 % dictionary
 modality_properties = dictionary("folders", ...

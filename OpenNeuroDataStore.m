@@ -39,11 +39,17 @@ classdef OpenNeuroDataStore < matlab.io.Datastore
             % set table reading settings
             ds.TblReadSettings = getTblSet(ds);
 
-            path = 's3://openneuro.org/'+dsID+'/'+subID;
-            %path = 's3://openneuro.org/ds003104/derivatives/'
-                   
+            if ~isempty(subID)
+                path = 's3://openneuro.org/'+dsID+'/'+subID;
+            %path = 'https://github.com/OpenNeuroDatasets/ds004698/tree/main/derivatives/freesurfer'
+            else
+                path = 's3://openneuro.org/'+dsID;
+            end
+
+            %subIDs = participants{"participant_id"}
             % create datastore object
             try
+                %path = 's3://openneuro.org/ds003104/'
                 ds.FileSet = matlab.io.datastore.DsFileSet(path, ...
                              'IncludeSubfolders',true, ...
                              'FileExtensions',extension);
@@ -55,6 +61,7 @@ classdef OpenNeuroDataStore < matlab.io.Datastore
                 warning("File extension "+ extension + " not found. Continuing...");
             
             end
+            
         end
 
        function data = read(ds, c)
