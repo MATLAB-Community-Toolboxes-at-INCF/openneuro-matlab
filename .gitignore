@@ -1,4 +1,6 @@
 *.asv
-old/
+old_and_untracked/*
 test_code.m
 OpenNeuroDemo_test.mlx
+test_BIDS.mat
+
