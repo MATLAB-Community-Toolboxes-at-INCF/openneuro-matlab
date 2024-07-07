@@ -1,81 +1,95 @@
-classdef OpenNeuroDataSet
+classdef OpenNeuroDataSet < dynamicprops % & OpenNeuroDataStore  
 % Creates data set summary
-% (C) Johanna Bayer 01.12.2025
+% (C) Johanna Bayer 01.12.2023
 
     properties
         participants    table   = table     % data table: participants.tsv
         about_dataset   struct  = struct    % dataset_description.json
         info            struct  = struct    % participants.json
         encoding        struct  = struct    % data encoding information
-                                            % .bucket 
                                             % .ID
                                             % .dir
-                                            % .modality
-                                            % .modality_properties
+                                            %% .modality
+                                            %% .modality_properties
     end
-
 
     properties (Hidden = true)
-         sub_IDs       table  = table    % table with filepaths
+        sub_IDs       cell                  % table with filepaths
+        bucket        string = "openneuro.org";
+        
+        
     end
-
+   
     methods
+    
+    function b = OpenNeuroDataSet(ds_ID)
+    
+            %b@OpenNeuroDataStore()
+    
+            % ds_ID
+            b.encoding.ds_ID = ds_ID;
+           
 
-        function b = OpenNeuroDataSet(ID, modality)
-
-            arguments
-                ID          string      = string
-                modality    string      = string
-            end
-       
-         bucket = "openneuro.org";
-
-         b = checkinput(b, bucket, ID, modality);
-
-
-         % base directory
-            dir_base = "s3://" + b.encoding.bucket +"/" + b.encoding.ID;
+            % base directory
+            dir_base = "s3://" + b.bucket +"/" + b.encoding.ds_ID;
             b.encoding.dir = dir_base;
-         
-
-         % search for participants.tsv
-         try
+        
+        try
             b.participants = readtable(fullfile(dir_base + "/participants.tsv"), 'FileType', 'delimitedtext');
-         catch
-             warning("Partcipants.tsv  not found. Individualixed loading of" + ...
+        catch
+            warning("Partcipants.tsv  not found. Individualixed loading of" + ...
                  "participants will not be avaiable")
-         end
-         
-         if ~isempty(b.participants)
-             b.sub_IDs = b.participants(:,"participant_id");
-         else
-         end
-
-         try 
+        end
+    
+        try 
          % search for about_dataset
-         b.about_dataset = jsondecode(fileread(dir_base + "/dataset_description.json"));
-         catch
-             warning('Data set description not found.')
-         end
-
-         try 
-         % serach for info (participant.json)
-         b.info = jsondecode(fileread(dir_base + "/participants.json"));
-         catch
-             warning('Participants.json not found.')
-         end
-
-         %try 
-         % search for derivatives 
-         %b.derivatives = 
-
-        % implementation of addParticipantwiseDataStore
-
-
-        function ds = addParticipantwiseDataStore(obj, sub_ID)
-       
+            b.about_dataset = jsondecode(fileread(dir_base + "/dataset_description.json"));
+        catch
+            warning('Data set description not found.')
         end
    
+        try 
+         % serach for info (participant.json)
+        b.info = jsondecode(fileread(dir_base + "/participants.json"));
+        catch
+             warning('Participants.json not found.')
         end
+
+        % add sub_IDs 
+        if ~isempty(b.participants)
+             b.sub_IDs = table2cell(b.participants(:,"participant_id"));
+        else
+        end
+    end
+
+
+    b = infer_data(b)
+    % b = checkinput(b, bucket, ds_ID);
+
+     %dir("s3://openneuro.org/ds001499")
+
+    %%% 
+    % add a property dictionary into Data store
+    % static method that can query the keys and then the crawl
+    % addDataStore(MRI, etc)
+    % function validation and returning of the values of the dic, generate
+    % path
+
+    %end
+
+
+    %      %try 
+    %      % search for derivatives 
+    %      %b.derivatives = 
+    % 
+    %     % implementation of addParticipantwiseDataStore
+    % 
+    % 
+    %     function ds = addParticipantwiseDataStore(obj, extension, modality, ID, subID)
+    % 
+    % 
+    %     end
+    % 
+    %     end
     end
 end
