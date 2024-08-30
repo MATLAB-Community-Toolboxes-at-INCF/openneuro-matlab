@@ -1,60 +1,98 @@
-classdef OpenNeuroDataStore < matlab.io.Datastore
+classdef (Abstract) OpenNeuroDataStore < matlab.io.Datastore
 
-    % Customized matlab.io.Datastore class. 
+    % Customized abstract matlab.io.Datastore class. 
     % accepts the data set ID and the subject ID as input parameters.
     %
-
-
-    properties (Access = public)
-        extension           string
-        modality            string
-        files               table % might set this to private
-    end
+    
 
     properties (Access = private)
         CurrentFileIndex    double
         FileSet             matlab.io.datastore.DsFileSet
         TblReadSettings     struct
+        files               struct
     end
 
     methods
         
-        function ds = OpenNeuroDataStore(extension, modality, dsID, subID)
+        function ds = OpenNeuroDataStore(varargin)
+        %function ds = OpenNeuroDataStore(ds_ID, modality, extension)
             %BIDSDataStore contains subject data
             %   Initialized with BIDS class to hold pointers to location of
             %   individual data files.
-            %   
 
-            arguments
-                extension       string
-                modality        string
-                dsID            string
-                subID           string
-            end
+            if nargin ==0
             
-            % set extension / modality
-            ds.extension = extension;
-            ds.modality = modality;
+
+            elseif nargin == 1
+                b = obj;
+                path = b.encoding.dir + "/" + b.sub_IDs{1}
+                ds.FileSet = matlab.io.datastore.DsFileSet(path, ...
+                             'IncludeSubfolders',true);
+
+                ds.CurrentFileIndex = 1;
+
+                %ds.files = viewall(ds);
+                ds.files = viewall(ds)
+                reset(ds);
+            
+            elseif nargin == 2
+                ds.encoding.modality = modality;
+                
+            end
+            if nargin > 2
+                ds.encoding.data_type = varargin{1};
+                ds.encoding.extension = varargin{2};
+                %ds.files  = varargin{2};
             
             % set table reading settings
             ds.TblReadSettings = getTblSet(ds);
 
-            path = 's3://openneuro.org/'+dsID+'/'+subID;
-            %path = 's3://openneuro.org/ds003104/derivatives/'
-                   
+            if nargin > 4
+                ds.encoding.subID = varargin{3};
+                path = 's3://openneuro.org/'+dsID+'/'+subID;
+            %path = 'https://github.com/OpenNeuroDatasets/ds004698/tree/main/derivatives/freesurfer'
+            else
+                path = 's3://openneuro.org/'+ds_ID;
+            end
+
+            %subIDs = participants{"participant_id"}
             % create datastore object
             try
+                %path = 's3://openneuro.org/ds003104/'
                 ds.FileSet = matlab.io.datastore.DsFileSet(path, ...
                              'IncludeSubfolders',true, ...
-                             'FileExtensions',extension);
+                             'FileExtensions',ds.encoding.extension);
                 ds.CurrentFileIndex = 1;
 
-                ds.files = viewall(ds);
+                %ds.files = viewall(ds);
+                ds.files = viewall(ds)
                 reset(ds);
             catch
-                warning("File extension "+ extension + " not found. Continuing...");
+                warning("File extension "+ ds.encoding.extension + " not found. Continuing...");
             
             end
+            end
+            
+        end
+        
+        function create_path
+        end
+
+        function ds = crawl(ds)
+           b = ds;
+           path = b.encoding.dir + "/" + b.sub_IDs{1}
+           ds.FileSet = matlab.io.datastore.DsFileSet(path, ...
+                             'IncludeSubfolders',true);
+
+            ds.CurrentFileIndex = 1;
+            ds.addprop('table');
+            ds.table = viewall(ds)
+            reset(ds);
+
+            create_dic(ds)
+        end
+       
+        function modality_dictionary = pass_info()
         end
 
        function data = read(ds, c)
@@ -197,7 +235,7 @@ classdef OpenNeuroDataStore < matlab.io.Datastore
             end
         end
     
-       function data = MySpecialFileReader(~, tbl2load, extension)
+        function data = MySpecialFileReader(~, tbl2load, extension)
             % Loads data based on table input
             
             % Update
@@ -218,6 +256,9 @@ classdef OpenNeuroDataStore < matlab.io.Datastore
                         data{i,1} = readtable(tbl2load.FileName(i), 'FileType', 'delimitedtext');
                         data{i,2} = tbl2load.FileName{i};
                     end
+                case ".stats"
+                    print("derivatives")
+            
             end
         end
 
@@ -249,7 +290,7 @@ classdef OpenNeuroDataStore < matlab.io.Datastore
        function t = getTblSet(ds)
             % Set table search settings for reading data
             t = struct;
-            switch ds.modality
+            switch ds.encoding.modality
                 case 'mri'
                     t.colNames = {'participant_id',...
                                   'sub_id'};

@@ -1,13 +1,11 @@
-function modality_properties = get_value(modality)
-
+function dic = bidsDictionary(datastoreType, folder)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 % Keys
-switch modality
+switch datastoreType
     % values based on modality
-    case "eeg"
+    case "eeg" % make more specific edf-eeg (find some data sets where those are present)
         folders = {"eeg";
                    "beh"};
         extension_list = {".json";
@@ -19,10 +17,21 @@ switch modality
                           ".fdt";
                           ".set";
                           ".edf"};
+
     case "mri"
-        folders = {"anat";
-                   "func";
-                   "fmap"};
+        switch folder
+            case "anat"
+                folders = "anat";
+            case "func"
+                folders  = "func";
+            case "fmap"
+                folders = "fmap";
+            case "dwi"
+                folders = "dwi";
+            otherwise
+
+        end
+
         extension_list = {".json";
                           ".gz";
                           ".nii";
@@ -34,13 +43,18 @@ switch modality
                    "anat";
                    "func";
                    "fmap"};
-        modality_properties = dictionary("folders", {folders});
-        return
+    otherwise
+
 end
 
+
 % dictionary
-modality_properties = dictionary("folders", ...
-                                  {folders}, ...
-                                  "extensions", ...
-                                  {extension_list});
+dic = dictionary( "subjects", {"*"}, ...
+                  "folders", {folders}, ... 
+                  "sessions", {"*"}, ...
+                  "tasks", {"*"}, ...
+                  "runs", {"*"}, ...
+                   "extensions", {extension_list});
+
+
 end

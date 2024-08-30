@@ -43,3 +43,5 @@ Output:
 
 ## Requirements
 Compatible with R2023a
+
+(C) 2023 Johanna Bayer
