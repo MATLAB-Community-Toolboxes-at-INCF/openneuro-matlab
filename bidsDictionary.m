@@ -1,11 +1,11 @@
-function dic = get_keys(modality, folder)
+function dic = bidsDictionary(datastoreType, folder)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Keys
-switch modality
+switch datastoreType
     % values based on modality
-    case "eeg"
+    case "eeg" % make more specific edf-eeg (find some data sets where those are present)
         folders = {"eeg";
                    "beh"};
         extension_list = {".json";
@@ -49,10 +49,11 @@ end
 
 
 % dictionary
-dic = dictionary("folders", {folders}, ...                                
-                  "sessions", {"all"}, ...
-                  "tasks", {"all"}, ...
-                  "runs", {"all"}, ...
+dic = dictionary( "subjects", {"*"}, ...
+                  "folders", {folders}, ... 
+                  "sessions", {"*"}, ...
+                  "tasks", {"*"}, ...
+                  "runs", {"*"}, ...
                    "extensions", {extension_list});
 
 

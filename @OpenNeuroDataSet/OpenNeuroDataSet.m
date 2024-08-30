@@ -1,4 +1,4 @@
-classdef OpenNeuroDataSet < dynamicprops % & OpenNeuroDataStore  
+classdef OpenNeuroDataSet < dynamicprops %& OpenNeuroDataStore  
 % Creates data set summary
 % (C) Johanna Bayer 01.12.2023
 
@@ -63,33 +63,10 @@ classdef OpenNeuroDataSet < dynamicprops % & OpenNeuroDataStore
     end
 
 
-    b = infer_data(b)
+    b = addRootDir(b)
     % b = checkinput(b, bucket, ds_ID);
 
-     %dir("s3://openneuro.org/ds001499")
-
-    %%% 
-    % add a property dictionary into Data store
-    % static method that can query the keys and then the crawl
-    % addDataStore(MRI, etc)
-    % function validation and returning of the values of the dic, generate
-    % path
-
-    %end
-
-
-    %      %try 
-    %      % search for derivatives 
-    %      %b.derivatives = 
-    % 
-    %     % implementation of addParticipantwiseDataStore
-    % 
-    % 
-    %     function ds = addParticipantwiseDataStore(obj, extension, modality, ID, subID)
-    % 
-    % 
-    %     end
-    % 
-    %     end
+    b = addParticipantWiseDataStore(b, datastoreType, folder)
+ 
     end
 end
