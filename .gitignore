@@ -3,4 +3,10 @@ old_and_untracked/*
 test_code.m
 OpenNeuroDemo_test.mlx
 test_BIDS.mat
+test.m 
++openneuro_old/*
+.gitignore
+.DS_Store
+.MATLAB*
+
 
