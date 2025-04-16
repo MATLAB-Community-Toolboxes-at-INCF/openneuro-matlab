@@ -3,7 +3,7 @@ classdef Dataset < handle %& OpenNeuroDataStore
 % (C) Johanna Bayer 01.12.2023
 
     properties
-        ID              (1,1) string
+        ID               (1,1) string
 
         ParticipantIDs    (1,:) string
         ParticipantsInfo table   = table     % data table: participants.tsv
