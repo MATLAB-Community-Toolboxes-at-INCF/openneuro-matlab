@@ -16,7 +16,7 @@ classdef Participantwise < matlab.io.Datastore
                 filesetSpec (1,1) struct
             end
 
-            obj.FileSet = matlab.io.datastore.DsFileSet(computeLocations(dataset,filesetSpec),'FileExtensions',filesetSpec.extensionList);
+            obj.FileSet = matlab.io.datastore.DsFileSet(computeLocations(dataset,filesetSpec),'FileExtensions',filesetSpec.extensionList, IncludeSubfolders=true);
 
             obj.CurrentFileIndex = 1;
             reset(obj);
@@ -90,8 +90,8 @@ if all(cellfun(@isempty,{fs.sessions,fs.tasks,fs.runs},'UniformOutput',true))  %
     % "Core modality" special case
     assert(isscalar(fs.extendedModality));
     assert(isa(dataset,'openneuro.Dataset'));
-    locations = dataset.RootURI + "/" + string(dataset.ID) + "/" + dataset.ParticipantIDs + "/" + fs.extendedModality;
-
+    %locations = dataset.RootURI + "/" + string(dataset.ID) + "/" + dataset.ParticipantIDs + "/" + fs.extendedModality;
+    locations = dataset.RootURI + string(dataset.ID) + "/" + dataset.ParticipantIDs + "/" + fs.extendedModality;
 
 else % General case (TODO; may encompass core modality special case, i.e., removing need for IF/ELSE)
     %TODO

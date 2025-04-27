@@ -25,7 +25,7 @@ classdef Dataset < handle %& OpenNeuroDataStore
     % end
 
     properties (Hidden, Constant)
-        RootURI        string = "s3://openneuro.org";
+        RootURI        string = "s3://openneuro.org/";
         coreModalityFilesetSpec = zinitCoreModalityFilesetSpec();
     end
 
@@ -42,7 +42,7 @@ classdef Dataset < handle %& OpenNeuroDataStore
             obj.ID = ID;
 
             try
-                obj.ParticipantsInfo = readtable(obj.URI + "/participants.tsv", 'FileType', 'delimitedtext');
+                obj.ParticipantsInfo = readtable(fullfile(obj.URI + "/participants.tsv"), 'FileType', 'delimitedtext');
                 obj.ParticipantIDs = string(obj.ParticipantsInfo{:,1});  %TODO: access by column name (for clarity & self-validation)
             catch
                 warning("Partcipants.tsv  not found. Individualixed loading of" + ...
