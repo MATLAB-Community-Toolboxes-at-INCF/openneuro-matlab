@@ -6,7 +6,7 @@ OpenNeuro Matlab Interface.
 
 ## Usage
 
-`>> BIDS1 = openneuro.Dataset(ds_ID1)`
+`>> ds = openneuro.Dataset(ds_ID1)`
 
 Input Arguments:
 
