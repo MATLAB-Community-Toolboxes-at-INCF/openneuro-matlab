@@ -1,44 +1,29 @@
 classdef Dataset < handle %& OpenNeuroDataStore  
-% Creates data set summary
+%  DATASET summary of this class goes here 
 % (C) Johanna Bayer 01.12.2023
 
     properties
-        ID               (1,1) string
+        ID (1,1) string % Dataset ID (e.g., "ds003097")
+        ParticipantIDs (1,:) string          % List of subject IDs (from participants.tsv)
+        ParticipantsInfo table = table       % Full content of participants.tsv
+        about_dataset struct = struct        % dataset_description.json metadata
+        info struct = struct                 % participants.json metadata
 
-        ParticipantIDs    (1,:) string
-        ParticipantsInfo table   = table     % data table: participants.tsv
-        
-        about_dataset   struct  = struct    % dataset_description.json
-        info            struct  = struct    % participants.json
-        %encoding        struct  = struct    % data encoding information
-        % .ID
-        % .dir
-        %% .modality
-        %% .modality_properties
     end
 
     properties (Dependent)
         URI          (1,1) string
     end
-    % properties (Hidden = true)
-    %     sub_IDs       cell                  % table with filepaths             
-    % end
 
     properties (Hidden, Constant)
         RootURI        string = "s3://openneuro.org/";
         coreModalityFilesetSpec = zinitCoreModalityFilesetSpec();
     end
-
-    % properties (Hidden, SetAccess = immutable)
-    % end
    
     methods
     
         function obj = Dataset(ID)
 
-            %b@OpenNeuroDataStore()
-
-            % ds_ID
             obj.ID = ID;
 
             try
@@ -63,11 +48,6 @@ classdef Dataset < handle %& OpenNeuroDataStore
                 warning('Participants.json not found.')
             end
 
-            % % add sub_IDs
-            % if ~isempty(obj.participants)
-            %     obj.sub_IDs = table2cell(obj.participants(:,"participant_id"));
-            % else
-            % end
         end
 
 
