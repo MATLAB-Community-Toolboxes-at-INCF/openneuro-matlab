@@ -8,5 +8,13 @@ test.m
 .gitignore
 .DS_Store
 .MATLAB*
++openneuro_remote/*
++openneuro_works/*
++openneuro_May.zip
++openneuro.zip
+OpenNeuroDemo2.mlx
++openneuro2/*
+ds001415/
+
 
 
