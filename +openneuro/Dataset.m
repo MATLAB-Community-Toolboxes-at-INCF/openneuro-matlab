@@ -1,14 +1,14 @@
 classdef Dataset < handle %& OpenNeuroDataStore  
-%  DATASET summary of this class goes here 
+% Creates data set summary
 % (C) Johanna Bayer 01.12.2023
 
     properties
-        ID (1,1) string % Dataset ID (e.g., "ds003097")
-        ParticipantIDs (1,:) string          % List of subject IDs (from participants.tsv)
-        ParticipantsInfo table = table       % Full content of participants.tsv
-        about_dataset struct = struct        % dataset_description.json metadata
-        info struct = struct                 % participants.json metadata
-
+        ID              (1,1) string
+        ParticipantIDs    (1,:) string
+        ParticipantsInfo table   = table     % data table: participants.tsv
+        
+        about_dataset   struct  = struct    % dataset_description.json
+        info            struct  = struct    % participants.json
     end
 
     properties (Dependent)
@@ -16,53 +16,46 @@ classdef Dataset < handle %& OpenNeuroDataStore
     end
 
     properties (Hidden, Constant)
-        RootURI        string = "s3://openneuro.org/";
+        RootURI        string = "s3://openneuro.org";
         coreModalityFilesetSpec = zinitCoreModalityFilesetSpec();
     end
    
     methods
-    
         function obj = Dataset(ID)
-
+            % Constructor
             obj.ID = ID;
 
             try
-                obj.ParticipantsInfo = readtable(fullfile(obj.URI + "/participants.tsv"), 'FileType', 'delimitedtext');
+                obj.ParticipantsInfo = readtable(obj.URI + "/participants.tsv", 'FileType', 'text');
                 obj.ParticipantIDs = string(obj.ParticipantsInfo{:,1});  %TODO: access by column name (for clarity & self-validation)
             catch
-                warning("Partcipants.tsv  not found. Individualixed loading of" + ...
-                    "participants will not be avaiable")
+                warning("Participants.tsv not found. Individualized loading of " + ...
+                    "participants will not be available")
             end
 
             try
-                % search for about_dataset
-                obj.about_dataset = jsondecode(fileread(dir_base + "/dataset_description.json"));
+                % Fixed: Use obj.URI instead of undefined dir_base
+                obj.about_dataset = jsondecode(fileread(obj.URI + "/dataset_description.json"));
             catch
-                warning('Data set description not found.')
+                warning('Dataset description not found.')
             end
 
             try
-                % serach for info (participant.json)
-                obj.info = jsondecode(fileread(dir_base + "/participants.json"));
+                % Fixed: Use obj.URI instead of undefined dir_base
+                obj.info = jsondecode(fileread(obj.URI + "/participants.json"));
             catch
                 warning('Participants.json not found.')
             end
-
         end
 
-
-
-
         function ds = addParticipantwiseDatastore(obj, modality)
-
-            % Simple mode:  one argument, a key to the 'easy' special cases where core modality gives all the required info to make the datastore
+            % Simple mode: one argument, a key to the 'easy' special cases where core modality gives all the required info to make the datastore
             % Future mode(s): additional arguments, e.g., of extended modalities, sessions, runs, etc as needed to make the datastore
 
             arguments
-                obj (1,1) openneuro.Dataset;
+                obj
                 modality (1,1) string {mustBeMember(modality,["mri" "eeg"])}
             end
-
 
             if nargin == 2 % simple mode (core modality-driven)
                 filesetSpec = obj.coreModalityFilesetSpec(modality);
@@ -71,36 +64,46 @@ classdef Dataset < handle %& OpenNeuroDataStore
             end
 
             ds = zprvAddParticipantwiseDatastore(obj,filesetSpec);
-
-
         end
-
+        
+        function ds = Participantwise(obj, typeName)
+            % MVP method: Create participantwise datastore using Type dictionary
+            %
+            % Parameters:
+            %   typeName - String from Type dictionary (e.g., "Anatomical NIfTI")
+            %
+            % Usage:
+            %   ds = Dataset('ds001415');
+            %   anatDS = ds.Participantwise("Anatomical NIfTI");
+            
+            arguments
+                obj
+                typeName (1,1) string
+            end
+            
+            % Create Participantwise datastore using the dataset's ID and path
+            ds = openneuro.datastore.Participantwise(typeName);
+        end
     end
 
     methods
         function uri = get.URI(obj)
             uri = obj.RootURI + "/" + obj.ID;
         end
-
     end
 
     methods (Access=protected)
-
         function ds = zprvAddParticipantwiseDatastore(obj,filesetSpec)
             ds = openneuro.datastore.Participantwise(obj,filesetSpec);
         end
-
     end
-
 end
 
 %% LOCAL FUNCTIONS
 
 function dict = zinitCoreModalityFilesetSpec()
-
-
-
-    dict = configureDictionary("string","struct");
+    % Fixed: Use containers.Map instead of configureDictionary for compatibility
+    dict = containers.Map();
 
     % modality = MRI
     s = struct;
@@ -123,66 +126,111 @@ function dict = zinitCoreModalityFilesetSpec()
     % Thus far, (just) these two cases have been identified where datastore contents can be inferred w/ just a modality hint
 end
 
-
+% classdef Dataset < handle %& OpenNeuroDataStore  
+% % Creates data set summary
+% % (C) Johanna Bayer 01.12.2023
 % 
+%     properties
+%         ID              (1,1) string
+%         ParticipantIDs    (1,:) string
+%         ParticipantsInfo table   = table     % data table: participants.tsv
 % 
-% % Keys
-% switch datastoreType
-%     % values based on modality
-%     case "eeg" % make more specific edf-eeg (find some data sets where those are present)
-%         folders = {"eeg";
-%                    "beh"};
-%         extension_list = {".json";
-%                           ".tsv";
-%                           ".eeg";
-%                           ".vhdr";
-%                           ".vmrk";
-%                           ".csv";
-%                           ".fdt";
-%                           ".set";
-%                           ".edf"};
+%         about_dataset   struct  = struct    % dataset_description.json
+%         info            struct  = struct    % participants.json
+%     end
 % 
-%     case "mri"
-%         switch folder
-%             case "anat"
-%                 folders = "anat";
-%             case "func"
-%                 folders  = "func";
-%             case "fmap"
-%                 folders = "fmap";
-%             case "dwi"
-%                 folders = "dwi";
-%             otherwise
+%     properties (Dependent)
+%         URI          (1,1) string
+%     end
 % 
+%     properties (Hidden, Constant)
+%         RootURI        string = "s3://openneuro.org";
+%         coreModalityFilesetSpec = zinitCoreModalityFilesetSpec();
+%     end
+% 
+%     methods
+%         function obj = Dataset(ID)
+%             % Constructor
+%             obj.ID = ID;
+% 
+%             try
+%                 obj.ParticipantsInfo = readtable(obj.URI + "/participants.tsv", 'FileType', 'text');
+%                 obj.ParticipantIDs = string(obj.ParticipantsInfo{:,1});  %TODO: access by column name (for clarity & self-validation)
+%             catch
+%                 warning("Participants.tsv not found. Individualized loading of " + ...
+%                     "participants will not be available")
+%             end
+% 
+%             try
+%                 % Fixed: Use obj.URI instead of undefined dir_base
+%                 obj.about_dataset = jsondecode(fileread(obj.URI + "/dataset_description.json"));
+%             catch
+%                 warning('Dataset description not found.')
+%             end
+% 
+%             try
+%                 % Fixed: Use obj.URI instead of undefined dir_base
+%                 obj.info = jsondecode(fileread(obj.URI + "/participants.json"));
+%             catch
+%                 warning('Participants.json not found.')
+%             end
 %         end
 % 
-%         extension_list = {".json";
-%                           ".gz";
-%                           ".nii";
-%                           ".tsv"};
-%     case ""
-%         warning("Modality not specified.")
-%         folders = {"eeg";
-%                    "beh";
-%                    "anat";
-%                    "func";
-%                    "fmap"};
-%     otherwise
+%         function ds = addParticipantwiseDatastore(obj, modality)
+%             % Simple mode: one argument, a key to the 'easy' special cases where core modality gives all the required info to make the datastore
+%             % Future mode(s): additional arguments, e.g., of extended modalities, sessions, runs, etc as needed to make the datastore
 % 
+%             arguments
+%                 obj (1,1) openneuro.Dataset;
+%                 modality (1,1) string {mustBeMember(modality,["mri" "eeg"])}
+%             end
+% 
+%             if nargin == 2 % simple mode (core modality-driven)
+%                 filesetSpec = obj.coreModalityFilesetSpec(modality);
+%             elseif nargin > 2
+%                 error("Currently only cases of MRI anatomical and EEG data types are supported. Other participantwise data subsets coming soon.")
+%             end
+% 
+%             ds = zprvAddParticipantwiseDatastore(obj,filesetSpec);
+%         end
+%     end
+% 
+%     methods
+%         function uri = get.URI(obj)
+%             uri = obj.RootURI + "/" + obj.ID;
+%         end
+%     end
+% 
+%     methods (Access=protected)
+%         function ds = zprvAddParticipantwiseDatastore(obj,filesetSpec)
+%             ds = openneuro.datastore.Participantwise(obj,filesetSpec);
+%         end
+%     end
 % end
 % 
+% %% LOCAL FUNCTIONS
 % 
-% % dictionary
-% dic = dictionary( "subjects", {"*"}, ...
-%                   "folders", {folders}, ... 
-%                   "sessions", {"*"}, ...
-%                   "tasks", {"*"}, ...
-%                   "runs", {"*"}, ...
-%                    "extensions", {extension_list});
+% function dict = zinitCoreModalityFilesetSpec()
+%     % Fixed: Use containers.Map instead of configureDictionary for compatibility
+%     dict = containers.Map();
 % 
+%     % modality = MRI
+%     s = struct;
+%     s.extendedModality = "anat";
+%     s.sessions = string.empty();
+%     s.tasks = string.empty();
+%     s.runs = string.empty();
+%     s.extensionList = [".nii.gz" ".json"];
+%     dict("mri") = s;
 % 
-% end
+%     % modality = EEG
+%     s = struct;
+%     s.extendedModality = "eeg";
+%     s.sessions = string.empty();
+%     s.tasks = string.empty();
+%     s.runs = string.empty();
+%     s.extensionList = [".eeg" ".edf" ".json"];
+%     dict("eeg") = s;
 % 
-% 
-% 
+%     % Thus far, (just) these two cases have been identified where datastore contents can be inferred w/ just a modality hint
 % end
