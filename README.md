@@ -1,16 +1,45 @@
 # OpenNeuro-Toolbox
 
-OpenNeuro Matlab Interface.
+**OpenNeuro Matlab Interface** — A lightweight interface for accessing and reading participant-level data from OpenNeuro datasets in MATLAB.
 
-## Usage
+##  Usage
 
-`>> BIDS1 = openneuro.Dataset(ds_ID1)`
+```matlab
+>> ds = openneuro.Dataset('ds001415');
+>> anatDS = ds.Participantwise('JSON Files');
+```
 
-Input Arguments:
+### Input Arguments
 
-- `ds_ID1` OpenNeuro data set ID, of format 'dsXXXXX'
+- **`'dsXXXXX'`**: OpenNeuro dataset ID (e.g., `'ds001415'`).
+- (`data type`) can be one of the following:
 
-## Requirements
-Compatible with R2023a
+| Type                | Folder      | File Extensions      | Read Function      |
+|---------------------|-------------|-----------------------|--------------------|
+| `'Anatomical NIfTI'` | `anat`     | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'EEG EDF'`          | `eeg`      | `.edf`                | `edfread`          |
+| `'Functional NIfTI'` | `func`     | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'DWI'`              | `dwi`      | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'Fieldmap'`         | `fmap`     | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'JSON Files'`       | `anat`     | `.json`               | `@(f) jsondecode(fileread(f))` |
+| `'TSV Files'`        | `anat`     | `.tsv`, `.txt`        | `readtable`        |
 
-(C) 2023 Johanna Bayer
+### Example: Read a JSON file
+
+```matlab
+if anatDS.hasdata()
+    [data, info] = anatDS.read();  % No arguments as required
+    fprintf('    ✓ MVP read successful: %s\n', info.Filename);
+else
+    fprintf('    ✗ No data available (normal if dataset folder doesn''t exist)\n');
+end
+```
+
+##  Requirements
+
+- MATLAB **R2023a** or later
+
+##  License
+
+(C) 2023 Johanna Bayer  
+
