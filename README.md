@@ -50,5 +50,3 @@ end
 ##  License
 
 (C) 2023 Johanna Bayer  
-
-
