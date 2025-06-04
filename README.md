@@ -1,41 +1,52 @@
-# BIDS Toolbox #
-A MATLAB® toolbox for accessing [BIDS](https://bids.neuroimaging.io)-compliant datasets stored in S3 object stores Brain Imaging Data Structure (BIDS) Standard
+#  OpenNEURO for MATLAB  
 
-## Description ##
-BIDS Class object implements the skeleton for the interface between a file folder validly organized to the BIDS data organization standard and the representation of its information in structures and tables. Moreover, it utilizes MATLAB table and datastore types to load/show data within a given Amazon S3 bucket and folder.
-
-## Usage ##
-> `>> dataset = BIDS(bucket, ID,modality)`
-
-Input Arguments: 
-* `bucket` base AWS S3 path
-* `ID` folder within AWS S3 bucket
-* `modality` (optional) dataset type
-
-Output:
-* `dataset` a BIDS Class Object
+A MATLAB® toolbox for accessing remote datasets stored on [OpenNEURO](https://openneuro.org/search) data archive. OpenNEURO only stores [BIDS](https://bids.neuroimaging.io)-compliant datasets, so [OpenNEURO for MATLAB](https://github.com/MATLAB-Community-Toolboxes-at-INCF/openneuro-matlab) is also BIDS-aware.
 
 
-## Properties ##
-* `Participants` Data table taken from 'participants.tsv' file
-* `BIDSData` Cell for # BIDSDataStore # objects
-* `About_Dataset` Data from root 'dataset_description.json' file
-* `Info` Data taken from root 'participants.json' file
-* `Folder_Files` Complete directory folder and files structure
-* `Encoding` Data encoding information (bucket, ID, root dir, modality, modality_properties)
+**OpenNeuro Matlab Interface** — A lightweight interface for accessing and reading participant-level data from OpenNeuro datasets in MATLAB.
 
-## BIDSDataStore Syntax ##
-> `>> myBIDSDataStore = dataset.BIDSData{num}`
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=likeajumprope/OpenNEURO-toolbox)
 
-## Methods ##
-* `read` Read data in datastore
-* `readall` Read all data in datastore
-* `viewall` View all files in datastore
-* `reset` Reset datastore to initial stage
-* `hasdata` Determine if data is available to read
 
-## Example ##
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=stradaa/bids-toolbox-Alex_dev&file=BIDS_Usage_Example.mlx) Open in MATLAB Online to run Live Script of BIDS Usage Example
+##  Usage
 
-### Requirements ###
-Compatible with R2023a  
+
+```matlab
+>> ds = openneuro.Dataset('ds001415');
+>> anatDS = ds.Participantwise('JSON Files');
+```
+
+
+### Input Arguments
+
+- **`'dsXXXXX'`**: OpenNeuro dataset ID (e.g., `'ds001415'`).
+- (`data type`) can be one of the following:
+
+| Type                | Folder      | File Extensions      | Read Function      |
+|---------------------|-------------|-----------------------|--------------------|
+| `'Anatomical NIfTI'` | `anat`     | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'EEG EDF'`          | `eeg`      | `.edf`                | `edfread`          |
+| `'Functional NIfTI'` | `func`     | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'DWI'`              | `dwi`      | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'Fieldmap'`         | `fmap`     | `.nii`, `.nii.gz`     | `niftiread`        |
+| `'JSON Files'`       | `anat`     | `.json`               | `@(f) jsondecode(fileread(f))` |
+| `'TSV Files'`        | `anat`     | `.tsv`, `.txt`        | `readtable`        |
+
+### Example: Read a JSON file
+
+```matlab
+if anatDS.hasdata()
+    [data, info] = anatDS.read();  % No arguments as required
+    fprintf('    ✓ MVP read successful: %s\n', info.Filename);
+else
+    fprintf('    ✗ No data available (normal if dataset folder doesn''t exist)\n');
+end
+```
+
+##  Requirements
+
+- MATLAB **R2023a** or later
+
+##  License
+
+(C) 2023 Johanna Bayer  
