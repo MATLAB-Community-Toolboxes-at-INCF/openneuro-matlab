@@ -82,7 +82,7 @@ classdef Dataset < handle %& OpenNeuroDataStore
             end
             
             % Create Participantwise datastore using the dataset's ID and path
-            ds = openneuro.datastore.Participantwise(typeName);
+            ds = openneuro.datastore.Participantwise(obj,typeName);
         end
     end
 

@@ -37,31 +37,31 @@ classdef Participantwise < matlab.io.Datastore
             keys = obj.Type.keys;
         end
 
-        function obj = Participantwise(varargin)
+        function obj = Participantwise(dataset,spec)
             % Constructor supporting both MVP mode and original mode
             %
-            % MVP Mode (1 argument):
+            % MVP Mode (dictionary-based spec):
             %   obj = Participantwise("Anatomical NIfTI")
             %
-            % Original Mode (2 arguments):
+            % Original Mode (structure-based spec):
             %   obj = Participantwise(dataset, filesetSpec)
 
-            if nargin == 1
-                % MVP MODE: Single argument constructor
-                typeName = varargin{1};
+            if isStringScalar(spec) || (ischar(spec) && isvector(spec))
+                % MVP MODE: dictionary-based spec
+                %typeName = varargin{1};
                 
                 % Validate type name against the Type dictionary using keys() method
-                if ~isKey(obj.Type, typeName)
+                if ~isKey(obj.Type, spec)
                     error('Invalid type specified. Available types are: %s', strjoin(obj.AvailableTypes, ', '));
                 end
                 
                 obj.isMVPMode = true;
-                obj = createMVPDatastore(obj, typeName);
+                obj = createMVPDatastore(obj, dataset, spec);
                 
-            elseif nargin == 2
-                % ORIGINAL MODE: Two argument constructor (dataset, filesetSpec)
-                dataset = varargin{1};
-                filesetSpec = varargin{2};
+            else %if nargin == 2
+                % ORIGINAL MODE: structure-based spec
+                %dataset = varargin{1};
+                filesetSpec = spec; %varargin{2};
                 
                 % Validate arguments (original validation)
                 if ~isa(dataset, 'openneuro.Dataset')
@@ -74,8 +74,8 @@ classdef Participantwise < matlab.io.Datastore
                 obj.isMVPMode = false;
                 obj = createOriginalDatastore(obj, dataset, filesetSpec);
                 
-            else
-                error('Constructor requires either 1 argument (MVP mode) or 2 arguments (original mode). Got %d arguments.', nargin);
+            % else
+            %     error('Constructor requires either 1 argument (MVP mode) or 2 arguments (original mode). Got %d arguments.', nargin);
             end
         end
 
@@ -129,15 +129,16 @@ classdef Participantwise < matlab.io.Datastore
     end
 
     methods (Access = private)
-        function obj = createMVPDatastore(obj, typeName)
+        function obj = createMVPDatastore(obj, dataset, typeName)
             % Create MVP mode datastore using Type dictionary
             
             % Get the specification for this type
             spec = obj.Type(typeName);
             
             % Construct fileDatastore object using the Type specification
-            defaultPath = fullfile(pwd, "ds001415/");
-            searchPath = fullfile(defaultPath, 'sub-01', spec.FolderPath);
+            %defaultPath = fullfile(pwd, "ds001415/");
+            %searchPath = fullfile(defaultPath, 'sub-01', spec.FolderPath);
+            searchPath = fullfile(dataset.URI,dataset.ParticipantIDs(1), spec.FolderPath);
             
             try
                 obj.fileDatastoreObj = fileDatastore( ...
