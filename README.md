@@ -3,7 +3,7 @@
 A MATLAB® toolbox for accessing remote datasets stored on [OpenNEURO](https://openneuro.org/search) data archive. OpenNEURO only stores [BIDS](https://bids.neuroimaging.io)-compliant datasets, so [OpenNEURO for MATLAB](https://github.com/MATLAB-Community-Toolboxes-at-INCF/openneuro-matlab) is also BIDS-aware.
 
 
-**OpenNeuro Matlab Interface** — A lightweight interface for inspecting OpenNeuro datasets and reading and processing meaningful subsets in MATLAB.
+**OpenNeuro Matlab Interface** — A lightweight interface for inspecting OpenNeuro datasets and slicing out cohesive subsets (e.g., all data of a specific modality across all participants) into MATLAB [datastore objects](https://www.mathworks.com/help/matlab/datastore.html).
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=likeajumprope/OpenNEURO-toolbox)
 
